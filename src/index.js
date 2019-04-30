@@ -7,7 +7,7 @@ export function getQueryString(key) {
     // ([^&]*) 以不是&或者多个&开头
     // (&|$) 以空或者&结尾
     let reg = new RegExp('(^|&)' + key + '=([^&]*)(&|$)')
-    let q = window.location.search.slice(1).match(r)
+    let q = window.location.search.slice(1).match(reg)
     if (q !== null) {
         return q[2]
     }
