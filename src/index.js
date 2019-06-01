@@ -41,3 +41,35 @@ export function hmFormat(t, boundary) {
     h = (h === '00' && boundary && m === '00') ? '24' : h
     return h + ':' + m
 }
+
+/**
+ * 
+ * @param {Object} obj 需要拷贝的对象
+ * @param {Array} cache 是否循环引用
+ */
+export function deepCopy (obj, cache = []) {
+    // 为空或者不是对象则返回原 obj
+    if (obj === null || typeof obj !== 'object') {
+      return obj
+    }
+  
+    // 若是循环结构，则返回之前对象的 copy，而不是引用
+    const hit = find(cache, c => c.original === obj)
+    if (hit) {
+      return hit.copy
+    }
+  
+    const copy = Array.isArray(obj) ? [] : {}
+    // put the copy into cache at first
+    // because we want to refer it in recursive deepCopy
+    cache.push({
+      original: obj,
+      copy
+    })
+  
+    Object.keys(obj).forEach(key => {
+      copy[key] = deepCopy(obj[key], cache)
+    })
+  
+    return copy
+  }
