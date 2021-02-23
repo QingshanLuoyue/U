@@ -1,5 +1,5 @@
 /**
- * 
+ * description 获取 url 查询参数
  * @param {String} key 要查询的字段值
  */
 export function getQueryString(key) {
@@ -17,7 +17,7 @@ export function getQueryString(key) {
  * return 字符串
  */
 export function zero(num) {
-    return num < 10 ? ('0' + num) : num
+    return num < 10 ? '0' + num : num
 }
 
 /**
@@ -38,38 +38,106 @@ export function ymdFormat(t, symbol = '') {
 export function hmFormat(t, boundary) {
     let h = '' + zero(t.getHours())
     let m = '' + zero(t.getMinutes())
-    h = (h === '00' && boundary && m === '00') ? '24' : h
+    h = h === '00' && boundary && m === '00' ? '24' : h
     return h + ':' + m
 }
-
 /**
- * 
+ * description 获取列表 list 中第一个符合函数 f 条件的元素
+ * @param {Array} list 数组元素列表
+ * @param {Function} f 过滤函数
+ * @return 返回第一个符合条件的元素
+ */
+export function find(list, f) {
+    // @ts-ignore
+    return list.filter(f)[0]
+}
+/**
+ * description 深拷贝一个对象
  * @param {Object} obj 需要拷贝的对象
  * @param {Array} cache 是否循环引用
  */
-export function deepCopy (obj, cache = []) {
+export function deepCopy(obj, cache = []) {
     // 为空或者不是对象则返回原 obj
     if (obj === null || typeof obj !== 'object') {
-      return obj
+        return obj
     }
-  
+
     // 若是循环结构，则返回之前对象的 copy，而不是引用
-    const hit = find(cache, c => c.original === obj)
+    const hit = find(cache, (c) => c.original === obj)
     if (hit) {
-      return hit.copy
+        return hit.copy
     }
-  
+
     const copy = Array.isArray(obj) ? [] : {}
     // put the copy into cache at first
     // because we want to refer it in recursive deepCopy
     cache.push({
-      original: obj,
-      copy
+        original: obj,
+        copy,
     })
-  
-    Object.keys(obj).forEach(key => {
-      copy[key] = deepCopy(obj[key], cache)
+
+    Object.keys(obj).forEach((key) => {
+        copy[key] = deepCopy(obj[key], cache)
     })
-  
+
     return copy
-  }
+}
+/**
+ * description 注册事件
+ * @param {HTMLElement} element html 元素
+ * @param {String} event 事件名
+ * @param {Function} handler 事件处理函数
+ */
+export const on = (function () {
+    if (document.addEventListener) {
+        return function (element, event, handler) {
+            if (element && event && handler) {
+                element.addEventListener(event, handler, false)
+            }
+        }
+    } else {
+        return function (element, event, handler) {
+            if (element && event && handler) {
+                element.attachEvent('on' + event, handler)
+            }
+        }
+    }
+})()
+
+/**
+ * description 删除事件
+ * @param {HTMLElement} element html 元素
+ * @param {String} event 事件名
+ * @param {Function} handler 事件处理函数
+ */
+export const off = (function () {
+    if (document.removeEventListener) {
+        return function (element, event, handler) {
+            if (element && event) {
+                element.removeEventListener(event, handler, false)
+            }
+        }
+    } else {
+        return function (element, event, handler) {
+            if (element && event) {
+                element.detachEvent('on' + event, handler)
+            }
+        }
+    }
+})()
+
+/**
+ * description 注册仅执行一遍的事件，执行后自行删除
+ * @param {HTMLElement} element html 元素
+ * @param {String} event 事件名
+ * @param {Function} handler 事件处理函数
+ */
+export const once = function (element, event, handler) {
+    const listener = function () {
+        if (handler) {
+            handler.apply(this, arguments)
+        }
+        off(element, event, listener)
+    }
+    on(element, event, listener)
+}
